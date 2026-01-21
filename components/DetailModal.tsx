@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { HiraganaChar } from '../types';
 import { HIRAGANA_EXAMPLES } from '../constants';
-import { generateVocabularyExample } from '../services/geminiService';
-import { Volume2, Sparkles, Loader2, X, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { Volume2, X, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
 
 interface DetailModalProps {
   char: HiraganaChar;
@@ -14,14 +13,6 @@ interface DetailModalProps {
 }
 
 export const DetailModal: React.FC<DetailModalProps> = ({ char, onClose, onNext, onPrev, hasNext, hasPrev }) => {
-  const [vocab, setVocab] = useState<{ word: string, reading: string, meaning: string, sentence: string } | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  // Reset vocab when character changes
-  useEffect(() => {
-    setVocab(null);
-    setLoading(false);
-  }, [char]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -40,14 +31,6 @@ export const DetailModal: React.FC<DetailModalProps> = ({ char, onClose, onNext,
     window.speechSynthesis.speak(utterance);
   };
 
-  const handleGenerateVocab = async () => {
-    if (vocab) return;
-    setLoading(true);
-    const data = await generateVocabularyExample(char.kana, char.romaji);
-    setVocab(data);
-    setLoading(false);
-  };
-
   // Find static examples
   const examples = HIRAGANA_EXAMPLES.find(ex => ex.kana === char.kana);
 
@@ -55,7 +38,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ char, onClose, onNext,
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md animate-fade-in" onClick={onClose}>
       
       <div 
-        className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col p-8 min-h-[600px] max-h-[90vh] overflow-y-auto custom-scrollbar"
+        className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col p-8 min-h-[500px] max-h-[90vh] overflow-y-auto custom-scrollbar"
         onClick={e => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 z-10 transition-colors">
@@ -130,43 +113,6 @@ export const DetailModal: React.FC<DetailModalProps> = ({ char, onClose, onNext,
                     No static examples available for this character.
                   </div>
                 )}
-              </div>
-
-              {/* AI Generation Section */}
-              <div className="border-t border-slate-100 pt-6">
-                 {!vocab && !loading && (
-                    <div className="text-center">
-                      <p className="text-sm text-slate-400 mb-3">Need a full sentence example?</p>
-                      <button 
-                          onClick={handleGenerateVocab}
-                          className="px-6 py-3 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 transition-colors inline-flex items-center justify-center gap-2 font-bold text-sm"
-                      >
-                          <Sparkles size={16} />
-                          Generate Sentence with AI
-                      </button>
-                    </div>
-                 )}
-                 
-                 {loading && (
-                    <div className="flex items-center justify-center gap-2 text-slate-400 animate-pulse py-2">
-                        <Loader2 className="animate-spin" size={20} />
-                        <span className="text-sm">Creating a sentence...</span>
-                    </div>
-                 )}
-
-                 {vocab && (
-                    <div className="bg-indigo-50 rounded-xl p-5 border border-indigo-100 animate-fade-in">
-                        <div className="flex justify-between items-start mb-2">
-                             <div className="flex flex-col">
-                                 <span className="text-xl font-bold text-slate-800">{vocab.word}</span>
-                                 <span className="text-xs text-slate-500">{vocab.reading}</span>
-                             </div>
-                             <span className="text-[10px] font-bold text-indigo-400 uppercase border border-indigo-200 px-1 rounded">AI Generated</span>
-                        </div>
-                        <p className="text-sm text-indigo-700 font-medium mb-2">{vocab.meaning}</p>
-                        <p className="text-slate-600 italic text-sm border-t border-indigo-200 pt-2">"{vocab.sentence}"</p>
-                    </div>
-                 )}
               </div>
             </div>
         </div>
